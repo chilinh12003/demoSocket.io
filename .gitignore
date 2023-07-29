@@ -1,0 +1,9 @@
+*/build/
+*/node_modules/
+*/onHost/
+*/uploads/
+*/down/
+#**/.ENV
+#*.ENV
+*/.vscode/
+*/logs/

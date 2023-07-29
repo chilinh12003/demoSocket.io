@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body style="margin: 50px; text-align: center;">
+  <div style="padding: 10px;">
+    <label>Socket Url</label>
+    <input type="text" id="url" value="/fb/action_1">
+    <button type="button" id="connect">Connect</button>
+    <button type="button" id="disconnect">Disconnect</button>
+  </div>
+
+  <div style="padding: 10px;">
+    <label>Nội dung gửi</label>
+    <input type="text" id="content">
+    <button type="button" id="send">Send</button>
+  </div>
+  <h5>Kết quả</h5>
+  <div id="result">
+
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/socket.client.js"></script>
+  <script>
+    function addLog(res) {
+      $('#result').append($(`<p>${res.mess}</p>`));
+    }
+
+
+    var config = {
+      url: '/fb/action_1',
+      allowLog: true,
+      autoConnect: false,
+      allowLoading: false,
+      sends: {},
+      receives: {
+        connect: (res) => {
+          addLog({
+            mess: `Socket Kết nối thành công`
+          });
+
+        },
+        disconnect: (res) => {
+          addLog({
+            mess: `Socket Ngắt kết nối`
+          });
+        },
+        connect_error: (err) => {
+          client.disconnect();
+          let res = err.data;
+          if (res)
+            addLog(res);
+          else
+            addLog({
+              mess: `Error: ${err.message}`
+            });
+        },
+        //bắt lỗi chủ động từ server
+        error: (res) => {
+          addLog(res);
+        },
+        //Cập nhật trạng thái từ server gửi về
+        updateStatus: (res) => {
+          addLog(res);
+        },
+
+      }
+    }
+
+    $(window).on('load', function() {
+      var client = new SocketClient(config);
+
+      $('#connect').on('click', function() {
+        let url = $('#url').val();
+        client.connect(url);
+      });
+      $('#disconnect').on('click', function() {
+        client.disconnect();
+      });
+
+      $('#send').on('click', function() {
+
+        if (!client.isConnected()) {
+          addLog({
+            mess: 'Socket chưa kết nối!'
+          });
+          return;
+        }
+        let content = $('#content').val();
+
+        client.send('receiveContent', {
+          content: content
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
